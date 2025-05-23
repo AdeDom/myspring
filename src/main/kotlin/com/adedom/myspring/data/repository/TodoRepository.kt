@@ -19,7 +19,7 @@ interface TodoRepository {
 
     fun updateTodo(
         id: Int,
-        request: TodoRequest,
+        title: String,
     )
 
     fun deleteTodo(id: Int)
@@ -55,7 +55,7 @@ class TodoRepositoryImpl : TodoRepository {
 
     override fun updateTodo(
         id: Int,
-        request: TodoRequest,
+        title: String,
     ) {
         val index = todos.indexOfFirst { it.id == id }
 
@@ -66,7 +66,7 @@ class TodoRepositoryImpl : TodoRepository {
         val todo =
             TodoEntity(
                 id = id,
-                title = request.title,
+                title = title,
             )
         todos[index] = todo
     }

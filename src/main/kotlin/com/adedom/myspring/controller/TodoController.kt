@@ -3,7 +3,12 @@ package com.adedom.myspring.controller
 import com.adedom.myspring.data.model.BaseResponse
 import com.adedom.myspring.data.model.todo.TodoRequest
 import com.adedom.myspring.data.model.todo.TodoResponse
-import com.adedom.myspring.data.repository.TodoRepository
+import com.adedom.myspring.domain.usecase.AddTodoUseCase
+import com.adedom.myspring.domain.usecase.DeleteTodoUseCase
+import com.adedom.myspring.domain.usecase.GetTodoAllUseCase
+import com.adedom.myspring.domain.usecase.GetTodoByIdUseCase
+import com.adedom.myspring.domain.usecase.GetTodoByTitleUseCase
+import com.adedom.myspring.domain.usecase.UpdateTodoUseCase
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -19,55 +24,66 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/todo")
 class TodoController(
-    private val todoRepository: TodoRepository,
+    private val getTodoAllUseCase: GetTodoAllUseCase,
+    private val getTodoByIdUseCase: GetTodoByIdUseCase,
+    private val getTodoByTitleUseCase: GetTodoByTitleUseCase,
+    private val addTodoUseCase: AddTodoUseCase,
+    private val updateTodoUseCase: UpdateTodoUseCase,
+    private val deleteTodoUseCase: DeleteTodoUseCase,
 ) {
     @GetMapping
     fun getTodos(): BaseResponse<List<TodoResponse>> =
         BaseResponse(
-            data = todoRepository.getTodos(),
+            data = getTodoAllUseCase.execute(),
         )
 
     @GetMapping("/{id}")
     fun getTodo(
-        @PathVariable id: Int,
+        @PathVariable id: Int?,
     ): BaseResponse<TodoResponse> =
         BaseResponse(
-            data = todoRepository.getTodoById(id),
+            data = getTodoByIdUseCase.execute(id),
         )
 
     @GetMapping("/search")
     fun getSearch(
-        @RequestParam title: String,
+        @RequestParam title: String?,
     ): BaseResponse<TodoResponse> =
         BaseResponse(
-            data = todoRepository.getTodoByTitle(title),
+            data = getTodoByTitleUseCase.execute(title),
         )
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     fun addTodo(
         @RequestBody request: TodoRequest,
-    ): BaseResponse<Unit> =
-        BaseResponse(
-            data = todoRepository.addTodo(request),
+    ): BaseResponse<String> {
+        addTodoUseCase.execute(request)
+        return BaseResponse(
+            data = "Add todo success",
         )
+    }
 
     @ResponseStatus(HttpStatus.RESET_CONTENT)
     @PutMapping("/{id}")
     fun updateTodo(
-        @PathVariable id: Int,
+        @PathVariable id: Int?,
         @RequestBody request: TodoRequest,
-    ): BaseResponse<Unit> =
-        BaseResponse(
-            data = todoRepository.updateTodo(id, request),
+    ): BaseResponse<String> {
+        updateTodoUseCase.execute(id, request)
+        return BaseResponse(
+            data = "Update todo success",
         )
+    }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     fun deleteTodo(
-        @PathVariable id: Int,
-    ): BaseResponse<Unit> =
-        BaseResponse(
-            data = todoRepository.deleteTodo(id),
+        @PathVariable id: Int?,
+    ): BaseResponse<String> {
+        deleteTodoUseCase.execute(id)
+        return BaseResponse(
+            data = "Delete todo success",
         )
+    }
 }
